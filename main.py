@@ -1,44 +1,34 @@
-import numpy as np
 import cv2
+import numpy as np
 from matplotlib import pyplot as plt
 
 PATTERN_PATH = 'photos/pattern.png'
 IMAGE_PATH = 'photos/img_6727.jpg'
-OBJ_HEIGHT = 330
 
+#read in pattern and iphone image in grayscale
+pattern = cv2.imread(PATTERN_PATH,0)
+img = cv2.imread(IMAGE_PATH,0)
 
-def get_pattern_location():
-	"""
-		finds coordinates in the image of the top left corner and bottom right corner of the
-		rectangle that contains the pattern
-		returns those two coordinates
-	"""
-	pattern = cv2.imread(PATTERN_PATH,cv2.IMREAD_GRAYSCALE)
-	img = cv2.imread(IMAGE_PATH,cv2.IMREAD_GRAYSCALE)
+def get_keypoints(image):
 	
-	p_width, p_height = pattern.shape[::-1]
-	
-	res = cv2.matchTemplate(img,pattern,cv2.TM_CCOEFF)
-	min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-	
-	top_left = max_loc
-	bottom_right = (top_left[0] + p_width, top_left[1] + p_height)
-	
-	return [top_left,bottom_right]
+	orb = cv2.ORB_create()
+	#returns list of keypoints form the image.
+	return orb.detect(image,None)
 
-def get_distance(xy):
-	"""
-		returns the average distance between two points, xy passed in as a list of size 2
-		
-	"""
-	point_a = xy[0]
-	point_b = xy[1]
+def print_keypoints(kp,image):
 	
-	distances =  abs(point_a[0] - point_b[0]), abs(point_a[1] - point_b[1])
-	return np.mean(distances)	
-	
+	"""
+		draw markers on iphone image to show keypoints
+	"""
+	image_kp = cv2.drawKeypoints(image,kp,255, 0)
+	plt.imshow(image_kp)
+	plt.show()
+
 def main():
-	print(get_distance(get_pattern_location()))
+	print_keypoints(get_keypoints(pattern),pattern)
+	print_keypoints(get_keypoints(img),img)
+	
 
-if __name__== '__main__':
+if __name__ == "__main__":
 	main()
+	
