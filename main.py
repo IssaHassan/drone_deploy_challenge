@@ -1,13 +1,6 @@
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
-#read in image and get dimensions
-path = 'photos/img_67'
-x = 19
-
-import numpy as np
-import cv2
-from matplotlib import pyplot as plt
 
 PATTERN_PATH = 'photos/pattern.png'
 IMAGE_PATH = 'photos/img_6727.jpg'
