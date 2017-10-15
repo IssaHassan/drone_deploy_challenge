@@ -47,12 +47,45 @@ class Match:
 		#return sorted list of DMatch objects, matches with least distance are first in the list
 		return sorted(temp,key = lambda d:d.distance)
 		
+	def get_kp_matches(self):
+		
+		#returns list of keypoint positions in iphone image and pattern that mathced with each other
+		
+		pattern_kp_matches = []
+		iphone_kp_matches = []
+		
+		for m in self.matches:
+			
+			#get index in total keypoints for each matched index 
+			#queryIdx refers to the first descriptor passed to bf.match (pattern), 
+			#trainIdx refers to the second
+			
+			pattern_idx = m.queryIdx
+			iphone_idx = m.trainIdx
+		
+			#append each keypoint that matched to the list of pattern matches and iphone matches
+			pattern_kp_matches.append(self.pattern_kp[pattern_idx])
+			iphone_kp_matches.append(self.iphone_kp[iphone_idx])
+		
+		return pattern_kp_matches, iphone_kp_matches
+		
+		
+	def show_kp_matches(self):
+		#show plot of keypoints in the iphone image and pattern image that matched with each other
+		
+		pattern_kp_matches = self.get_kp_matches()[0]
+		iphone_kp_matches = self.get_kp_matches()[1]
+		
+		self.show_keypoints(pattern_kp_matches,self.pattern_img)
+		self.show_keypoints(iphone_kp_matches,self.iphone_img)
+		
+		
 
 def main():
 	
 	m = Match(IMAGE_PATH)
 
-	print(m.matches[:5])
+	m.show_kp_matches()
 	
 	
 if __name__ == "__main__":
