@@ -3,7 +3,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 PATTERN_PATH = 'photos/pattern.png'
-IMAGE_PATH = 'photos/img_6727.jpg'
+IMAGE_PATH = 'photos/img_67'
+JPG = '.jpg'
 
 
 class Match:
@@ -25,6 +26,8 @@ class Match:
 
 		self.matches = self.get_matches()
 		
+		#get matched keypoints for pattern image and iphone image 
+		self.pattern_kp_matches,self.iphone_kp_matches = self.get_kp_matches()
 
 	def get_keypoints(self,image):
 		
@@ -49,7 +52,7 @@ class Match:
 		
 	def get_kp_matches(self):
 		
-		#returns list of keypoint positions in iphone image and pattern that mathced with each other
+		#returns list of keypoints in iphone image and pattern that mathced with each other
 		
 		pattern_kp_matches = []
 		iphone_kp_matches = []
@@ -69,24 +72,63 @@ class Match:
 		
 		return pattern_kp_matches, iphone_kp_matches
 		
+	def get_iphone_pt_matches(self):
+		#return list of points(tuples of x,y) of matched keypoints
+		iphone_matches = []
+		
+		for kp in self.iphone_kp_matches:
+			iphone_matches.append(kp.pt)
+		
+		return iphone_matches
+		
+		
 		
 	def show_kp_matches(self):
 		#show plot of keypoints in the iphone image and pattern image that matched with each other
 		
-		pattern_kp_matches = self.get_kp_matches()[0]
-		iphone_kp_matches = self.get_kp_matches()[1]
+		self.show_keypoints(self.pattern_kp_matches,self.pattern_img)
+		self.show_keypoints(self.iphone_kp_matches,self.iphone_img)
 		
-		self.show_keypoints(pattern_kp_matches,self.pattern_img)
-		self.show_keypoints(iphone_kp_matches,self.iphone_img)
+
+class Location:
+	
+	def __init__(self, keypoints):
+		
+		self.kp = keypoints
+		
+	
+	def distance_squared(self, points):
+		"""
+		Accepts two points and returns the squared distance between them,
+		there is no reason to compare square roots, because the difference will be the same
+		"""	
+		p1,p2 = points
+		return math.sqrt((p1[0]-p2[0])**2 +(p1[1]-p2[1])**2)
+	
+	def greatest_kp_distance(self):
+		
 		
 		
 
+def show_all_matches(matches):
+	for m in matches:
+		m.show_kp_matches()
+		
 def main():
 	
+	matches = []
+	
+	for x in range(7):
+		f = IMAGE_PATH+str(19+x)+JPG
+		matches.append(Match(f))
+	
+	show_all_matches(matches)
+	
+	"""
 	m = Match(IMAGE_PATH)
 
-	m.show_kp_matches()
-	
+	print(m.get_iphone_pt_matches())
+	"""
 	
 if __name__ == "__main__":
 	main()
