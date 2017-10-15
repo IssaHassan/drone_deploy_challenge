@@ -21,7 +21,7 @@ class Match:
 		#returns list of keypoints form the image.
 		return self.orb.detect(image,None)
 
-	def print_keypoints(self,kp,image):
+	def show_keypoints(self,kp,image):
 		
 		"""
 			draw markers on iphone image to show keypoints
@@ -33,8 +33,8 @@ class Match:
 def main():
 	
 	m = Match(IMAGE_PATH)
-	m.print_keypoints(m.get_keypoints(pattern),pattern)
-	m.print_keypoints(m.get_keypoints(m.iphone_img),m.iphone_img)
+	m.show_keypoints(m.get_keypoints(pattern),pattern)
+	m.show_keypoints(m.get_keypoints(m.iphone_img),m.iphone_img)
 	
 	
 if __name__ == "__main__":
