@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import itertools
+import math
 
 PATTERN_PATH = 'photos/pattern.png'
-IMAGE_PATH = 'photos/img_67'
+IMAGE_PATH = 'photos/img_6727.jpg'
 JPG = '.jpg'
 
 
@@ -94,7 +96,11 @@ class Location:
 	
 	def __init__(self, keypoints):
 		
+		#Accepts keypoints as a list of tuples of size two, which contain (x,y) coordinates 
+		#of each keypoint
 		self.kp = keypoints
+		self.max_kp_pair = self.get_max_kp_distance_pair()
+		self.max_kp_distance = self.get_max_kp_distance()
 		
 	
 	def distance_squared(self, points):
@@ -103,31 +109,78 @@ class Location:
 		there is no reason to compare square roots, because the difference will be the same
 		"""	
 		p1,p2 = points
-		return math.sqrt((p1[0]-p2[0])**2 +(p1[1]-p2[1])**2)
+		return ((p1[0]-p2[0])**2 +(p1[1]-p2[1])**2)
 	
-	def greatest_kp_distance(self):
+	def get_max_kp_distance_pair(self):
+		"""
+		Returns the keypount pair(as a tuple) whcih are the furthest apart form each other,
+		used to calculate the max distance between pairs.
+		"""
+		return max(itertools.combinations(self.kp, 2), key=self.distance_squared)
+	
+	def get_max_kp_distance(self):
+		#returns max distance between keypoints
 		
+		return math.sqrt(self.distance_squared(self.max_kp_pair))
 		
+	def remove_kp_pair(self, pair):
+		p1 = pair[0]
+		p2 = pair[1]
+		
+		for x in self.kp:
+			if x[0] == p1[0] or x[0] == p1[1] or x[1] == p1[0] or x[1] == p1[1]:
+				if p1 in self.kp:
+					self.kp.remove(p1)
+
+			if x[0] == p2[0] or x[0] == p2[1] or x[1] == p2[0] or x[1] == p2[1]:
+				if p2 in self.kp:
+					self.kp.remove(p2)
 		
 
+		
+	def get_best_kp_dist_pairs(self):
+		"""
+		temp = self.kp
+		saved = self.kp
+		"""
+		max_distances = []
+		max_kp_values = []
+
+		max_kp_values.append(self.max_kp_pair)
+		max_distances.append(self.max_kp_distance)
+		self.remove_kp_pair(self.max_kp_pair)
+		
+		for _ in range(5):
+			pt = self.get_max_kp_distance_pair()
+			self.max_kp_pair = pt
+			max_kp_values.append(pt)
+			max_distances.append(self.get_max_kp_distance())
+			self.remove_kp_pair(pt)
+		
+		return max_distances, max_kp_values
+		
+		
+		
 def show_all_matches(matches):
 	for m in matches:
 		m.show_kp_matches()
 		
 def main():
-	
-	matches = []
-	
-	for x in range(7):
-		f = IMAGE_PATH+str(19+x)+JPG
-		matches.append(Match(f))
-	
-	show_all_matches(matches)
+
+	m = Match(IMAGE_PATH)
+	#m.show_kp_matches()
+	l = Location(m.get_iphone_pt_matches())
+	print(l.get_best_kp_dist_pairs()[0])
+	"""
+	l = Location(m.get_iphone_pt_matches())
+	print(l.get_max_kp_distance())
+	#m.show_kp_matches()
 	
 	"""
-	m = Match(IMAGE_PATH)
-
-	print(m.get_iphone_pt_matches())
+	"""
+	l = Location(m.get_iphone_pt_matches())
+	print(l.get_max_kp_distance_pair())
+	#print(m.get_iphone_pt_matches())
 	"""
 	
 if __name__ == "__main__":
