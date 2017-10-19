@@ -15,6 +15,8 @@ REAL_PATTERN_SIZE = 88 #MM
 IPHONE_FOCAL_LENGTH = 35 #MM
 SENSOR_HEIGHT = 3.67 #MM
 
+IPHONE_PHOTO_WIDTH = 2448 #PIXELS
+IPHONE_PHOTO_HEIGHT = 3264 #PIXELS
 
 class Match:
 	
@@ -235,6 +237,17 @@ class Location:
 
 		return (IPHONE_FOCAL_LENGTH*REAL_PATTERN_SIZE*IMAGE_PATTERN_SIZE)/(self.pattern_size*SENSOR_HEIGHT)
 		
+	def get_midpoint_x(self):
+		"""
+		Returns midpoint in x direction between the two main keypoints stored in self.points 
+		"""
+		x1,_ = self.points[0]
+		x2,_ = self.points[1]
+		
+		
+		return (x1+x2)/2
+	
+	
 	def get_x(self):
 		"""
 		returns distance between the camera and the pattern in X direction in mm
@@ -251,6 +264,7 @@ def main():
 	m = Match(IMAGE_PATH)
 	l = Location(m.get_iphone_pt_matches())
 	print(l.get_z())
+	print(l.get_midpoint_x())
 
 	
 if __name__ == "__main__":
