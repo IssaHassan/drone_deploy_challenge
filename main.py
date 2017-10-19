@@ -111,7 +111,13 @@ class Location:
 		self.kp = keypoints
 		self.max_kp_pair = self.get_max_pair()
 		self.max_kp_distance = self.get_max_dist()
+		
+		#final distance to calculate the size of the pattern in the iphone image and the assoicated pair of 
+		#points 
+		self.dist, self.points = self.get_best_dist_pair() 
+		
 		self.pattern_size = self.get_pattern_size()
+
 	
 	def distance_squared(self, points):
 		"""
@@ -197,11 +203,11 @@ class Location:
 		dists = dists[::-1]
 		vals = vals[::-1]
 		
-		print(dists)
 		prev_d, prev_v = dists[0],vals[0]
 		
 		for d,v in zip(dists,vals):
 			if d > 1.41*prev_d:
+				print(prev_v)
 				return prev_d,prev_v
 			prev_d,prev_v = d,v 
 		
@@ -212,9 +218,9 @@ class Location:
 		returns the size of the pattern in pixels
 		"""
 
-		#get_best_kp_distances()[1] returns the two points that give the max distance between any two
+		#self.points gives the two points that give the max distance between any two
 		#correct keypoint values 
-		p1,p2 = self.get_best_kp_distances()[1]
+		p1,p2 = self.points
 		
 		#find if the difference in x or the difference in y is greater and that will be the size in pixels
 		#of the pattern inside the iphone image 
@@ -224,10 +230,17 @@ class Location:
 	
 	def get_z(self):
 		"""
-		returns distance between the camera and the pattern in z direction
+		returns distance between the camera and the pattern in Z direction in mm
 		"""
-		print(self.pattern_size)
+
 		return (IPHONE_FOCAL_LENGTH*REAL_PATTERN_SIZE*IMAGE_PATTERN_SIZE)/(self.pattern_size*SENSOR_HEIGHT)
+		
+	def get_x(self):
+		"""
+		returns distance between the camera and the pattern in X direction in mm
+		"""
+		
+		
 		
 def show_all_matches(matches):
 	for m in matches:
@@ -236,9 +249,8 @@ def show_all_matches(matches):
 def main():
 
 	m = Match(IMAGE_PATH)
-	#m.show_kp_matches()
 	l = Location(m.get_iphone_pt_matches())
-	print(l.get_best_kp_dist_pairs()[0])
+	print(l.get_z())
 
 	
 if __name__ == "__main__":
