@@ -182,6 +182,26 @@ class Location:
 		
 		return max_distances, max_kp_values
 		
+	
+	def get_best_dist_pair(self):
+		"""
+		Returns the largest correct distance and the associated pair of points
+		"""
+		
+		dists, vals = self.get_best_kp_dist_pairs()
+		dists = dists[::-1]
+		vals = vals[::-1]
+		
+		print(dists)
+		prev_d, prev_v = dists[0],vals[0]
+		
+		for d,v in zip(dists,vals):
+			if d > 1.41*prev_d:
+				return prev_d,prev_v
+			prev_d,prev_v = d,v 
+		
+		return prev_d,prev_v
+		
 		
 		
 def show_all_matches(matches):
