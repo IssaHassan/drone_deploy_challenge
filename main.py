@@ -8,6 +8,8 @@ PATTERN_PATH = 'photos/pattern.png'
 IMAGE_PATH = 'photos/img_6727.jpg'
 JPG = '.jpg'
 
+NUM_MAX_DISTANCES = 8
+
 
 class Match:
 	
@@ -95,35 +97,45 @@ class Match:
 class Location:
 	
 	def __init__(self, keypoints):
+		"""
+		Accepts keypoints as a list of tuples of size two, which contain (x,y) coordinates 
+		of each keypoint
 		
-		#Accepts keypoints as a list of tuples of size two, which contain (x,y) coordinates 
-		#of each keypoint
+		"""
+		
 		self.kp = keypoints
-		self.max_kp_pair = self.get_max_kp_distance_pair()
-		self.max_kp_distance = self.get_max_kp_distance()
+		self.max_kp_pair = self.get_max_pair()
+		self.max_kp_distance = self.get_max_dist()
 		
 	
 	def distance_squared(self, points):
 		"""
-		Accepts two points and returns the squared distance between them,
-		there is no reason to compare square roots, because the difference will be the same
+		Accepts two points and returns the squared distance between them
+		
 		"""	
 		p1,p2 = points
 		return ((p1[0]-p2[0])**2 +(p1[1]-p2[1])**2)
 	
-	def get_max_kp_distance_pair(self):
+	def get_max_pair(self):
 		"""
-		Returns the keypount pair(as a tuple) whcih are the furthest apart form each other,
-		used to calculate the max distance between pairs.
+		Returns the keypoint pair, in self.kp, with the largest distance between them 
+
 		"""
 		return max(itertools.combinations(self.kp, 2), key=self.distance_squared)
 	
-	def get_max_kp_distance(self):
-		#returns max distance between keypoints
+	def get_max_dist(self):
+		"""
+		Returns the distance between the two keypoints in self.max_kp_pair 
+		"""
 		
 		return math.sqrt(self.distance_squared(self.max_kp_pair))
 		
 	def remove_kp_pair(self, pair):
+		"""
+		Removes a pair of points from self.kp (the set of keypoints) 
+		"""
+	
+	
 		p1 = pair[0]
 		p2 = pair[1]
 		
@@ -140,21 +152,32 @@ class Location:
 		
 	def get_best_kp_dist_pairs(self):
 		"""
-		temp = self.kp
-		saved = self.kp
+		Returns two lists 
+		A list of the 8 largest distances between any two keypoint pairs and 
+		A list of tuples representing the 16 associated points (list is size 8) 
+		
+		After each keypoint is used in a pair
+		it is removed to avoid reusing a incorrect keypoint value 
 		"""
+		
 		max_distances = []
 		max_kp_values = []
 
+		#initialize the lists with the current values before removing the keypoints from the list and
+		#reinitializing the values 
 		max_kp_values.append(self.max_kp_pair)
 		max_distances.append(self.max_kp_distance)
 		self.remove_kp_pair(self.max_kp_pair)
 		
-		for _ in range(5):
-			pt = self.get_max_kp_distance_pair()
+		for _ in range(NUM_MAX_DISTANCES):
+			
+			#get the next pair of points with the maximum distance between them 
+			pt = self.get_max_pair()
 			self.max_kp_pair = pt
 			max_kp_values.append(pt)
-			max_distances.append(self.get_max_kp_distance())
+			
+			#get the distance between the new maximum distance pair 
+			max_distances.append(self.get_max_dist())
 			self.remove_kp_pair(pt)
 		
 		return max_distances, max_kp_values
@@ -171,17 +194,7 @@ def main():
 	#m.show_kp_matches()
 	l = Location(m.get_iphone_pt_matches())
 	print(l.get_best_kp_dist_pairs()[0])
-	"""
-	l = Location(m.get_iphone_pt_matches())
-	print(l.get_max_kp_distance())
-	#m.show_kp_matches()
-	
-	"""
-	"""
-	l = Location(m.get_iphone_pt_matches())
-	print(l.get_max_kp_distance_pair())
-	#print(m.get_iphone_pt_matches())
-	"""
+
 	
 if __name__ == "__main__":
 	main()
