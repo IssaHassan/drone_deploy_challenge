@@ -10,6 +10,11 @@ JPG = '.jpg'
 
 NUM_MAX_DISTANCES = 8
 
+IMAGE_PATTERN_SIZE = 330 #PIXELS
+REAL_PATTERN_SIZE = 88 #MM
+IPHONE_FOCAL_LENGTH = 35 #MM
+SENSOR_HEIGHT = 3.67 #MM
+
 
 class Match:
 	
@@ -216,6 +221,13 @@ class Location:
 		x = abs(p1[0]-p2[0])
 		y = abs(p1[1]-p2[1])
 		return max(x,y)		
+	
+	def get_z(self):
+		"""
+		returns distance between the camera and the pattern in z direction
+		"""
+		print(self.pattern_size)
+		return (IPHONE_FOCAL_LENGTH*REAL_PATTERN_SIZE*IMAGE_PATTERN_SIZE)/(self.pattern_size*SENSOR_HEIGHT)
 		
 def show_all_matches(matches):
 	for m in matches:
