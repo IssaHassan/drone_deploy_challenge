@@ -106,7 +106,7 @@ class Location:
 		self.kp = keypoints
 		self.max_kp_pair = self.get_max_pair()
 		self.max_kp_distance = self.get_max_dist()
-		
+		self.pattern_size = self.get_pattern_size()
 	
 	def distance_squared(self, points):
 		"""
@@ -202,7 +202,20 @@ class Location:
 		
 		return prev_d,prev_v
 		
+	def get_pattern_size(self):
+		"""
+		returns the size of the pattern in pixels
+		"""
+
+		#get_best_kp_distances()[1] returns the two points that give the max distance between any two
+		#correct keypoint values 
+		p1,p2 = self.get_best_kp_distances()[1]
 		
+		#find if the difference in x or the difference in y is greater and that will be the size in pixels
+		#of the pattern inside the iphone image 
+		x = abs(p1[0]-p2[0])
+		y = abs(p1[1]-p2[1])
+		return max(x,y)		
 		
 def show_all_matches(matches):
 	for m in matches:
