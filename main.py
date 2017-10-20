@@ -17,6 +17,8 @@ SENSOR_HEIGHT = 3.67 #MM
 
 IPHONE_PHOTO_WIDTH = 2448 #PIXELS
 IPHONE_PHOTO_HEIGHT = 3264 #PIXELS
+IPHONE_CENTER_X = IPHONE_PHOTO_WIDTH/2 #PIXELS
+IPHONE_CENTER_Y = IPHONE_PHOTO_HEIGHT/2 #PIXELS
 
 class Match:
 	
@@ -247,11 +249,26 @@ class Location:
 		
 		return (x1+x2)/2
 	
+	def get_scale(self):
+		"""
+		returns real life size of each pixel, or scale of the image in mm/px 
+		we have size of the object in real life(mm) and size of the object in the image(px)
+		"""
+
+		return REAL_PATTERN_SIZE/self.pattern_size
+
 	
 	def get_x(self):
 		"""
 		returns distance between the camera and the pattern in X direction in mm
+		If the camera is to the right of the pattern, it will return a positive value
+		If it is to the left a negative value will be returned.
 		"""
+		
+		pattern_dist = IPHONE_CENTER_X - self.get_midpoint_x()
+		return pattern_dist*self.get_scale()
+		
+		
 		
 		
 		
@@ -264,7 +281,7 @@ def main():
 	m = Match(IMAGE_PATH)
 	l = Location(m.get_iphone_pt_matches())
 	print(l.get_z())
-	print(l.get_midpoint_x())
+	print(l.get_x())
 
 	
 if __name__ == "__main__":
