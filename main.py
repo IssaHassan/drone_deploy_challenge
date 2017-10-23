@@ -19,7 +19,8 @@ IPHONE_PHOTO_WIDTH = 2448 #PIXELS
 IPHONE_PHOTO_HEIGHT = 3264 #PIXELS
 IPHONE_CENTER_X = IPHONE_PHOTO_WIDTH/2 #PIXELS
 IPHONE_CENTER_Y = IPHONE_PHOTO_HEIGHT/2 #PIXELS
-
+#The width of a pixel of the cameras sensor
+PIXEL_WIDTH_SENSOR = 0.0015 #MM 
 class Match:
 	
 	def __init__(self, filename):
@@ -41,6 +42,8 @@ class Match:
 		
 		#get matched keypoints for pattern image and iphone image 
 		self.pattern_kp_matches,self.iphone_kp_matches = self.get_kp_matches()
+		
+		self.h_matrix,self.mask = self.get_homography()
 
 	def get_keypoints(self,image):
 		
@@ -102,7 +105,31 @@ class Match:
 		self.show_keypoints(self.pattern_kp_matches,self.pattern_img)
 		self.show_keypoints(self.iphone_kp_matches,self.iphone_img)
 		
+	def get_homography(self):
+		#return homography matrix 
+		src_pts = np.float32([ self.pattern_kp[m.queryIdx].pt for m in self.matches ]).reshape(-1,1,2)
+		dst_pts = np.float32([ self.iphone_kp[m.trainIdx].pt for m in self.matches ]).reshape(-1,1,2)
+		return cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+	
+	
+	def intinsic_matrix(self):
+		###Note the basis for this function has been taken from https://gist.github.com/sehnkim/1033637
+		cx = IPHONE_PHOTO_WIDTH/2
+		cy = IPHONE_PHOTO_HEIGHT/2
 
+		#focal length divided by the size of a pixel on the camera sensor will give us our focal length/width in pixels 
+		fx = fy = IPHONE_FOCAL_LENGTH/PIXEL_WIDTH_SENSOR
+		
+		
+		m = np.asarray([[fx,0,cx],[0,fy,cy],[0,0,1]])
+		return m
+		
+	def get_rotation(self):
+		return cv2.decomposeHomographyMat(self.h_matrix,self.intinsic_matrix())[1][0]
+
+	def get_euler(self):
+		return cv2.RQDecomp3x3(self.get_rotation())[0]
+	
 class Location:
 	
 	def __init__(self, keypoints):
@@ -211,7 +238,6 @@ class Location:
 		
 		for d,v in zip(dists,vals):
 			if d > 1.41*prev_d:
-				print(prev_v)
 				return prev_d,prev_v
 			prev_d,prev_v = d,v 
 		
@@ -249,6 +275,12 @@ class Location:
 		
 		return (x1+x2)/2
 	
+	def get_midpoint_y(self):
+		
+		_,y1 = self.points[0]
+		_,y2 = self.points[1]
+		return (y1+y2)/2
+		
 	def get_scale(self):
 		"""
 		returns real life size of each pixel, or scale of the image in mm/px 
@@ -268,6 +300,12 @@ class Location:
 		pattern_dist = IPHONE_CENTER_X - self.get_midpoint_x()
 		return pattern_dist*self.get_scale()
 		
+	
+	def get_y(self):
+		
+		pattern_dist = IPHONE_CENTER_Y - self.get_midpoint_y()
+		return  pattern_dist*self.get_scale()
+		
 		
 		
 		
@@ -279,10 +317,23 @@ def show_all_matches(matches):
 def main():
 
 	m = Match(IMAGE_PATH)
+	#print(m.get_euler())
+	
 	l = Location(m.get_iphone_pt_matches())
-	print(l.get_z())
-	print(l.get_x())
-
+	
+	print('The distance of the image in the z,x, and y directions are: \n')
+	print('{0:.1f} mm'.format(l.get_z()))
+	print('{0:.1f} mm'.format(l.get_x()))
+	print('{0:.1f} mm\n'.format(l.get_y()))
+	
+	print('The values of the euler angles, yaw, pitch and roll are: \n')
+	
+	print('{0:.1f} deg'.format(m.get_euler()[0]))
+	print('{0:.1f} deg'.format(m.get_euler()[1]))
+	print('{0:.1f} deg'.format(m.get_euler()[2]))
+	
+	
+	
 	
 if __name__ == "__main__":
 	main()
